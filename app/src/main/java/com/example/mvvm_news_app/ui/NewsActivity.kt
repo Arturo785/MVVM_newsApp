@@ -7,6 +7,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.mvvm_news_app.R
 import kotlinx.android.synthetic.main.activity_news.*
 
+
 class NewsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,4 +17,6 @@ class NewsActivity : AppCompatActivity() {
         //We set the bottomNavigation with our navController
         bottomNavigationView.setupWithNavController(newsNavHostFragment.findNavController())
     }
+
+
 }
