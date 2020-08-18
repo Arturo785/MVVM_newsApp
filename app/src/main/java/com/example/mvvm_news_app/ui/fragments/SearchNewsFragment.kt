@@ -7,6 +7,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvm_news_app.R
 import com.example.mvvm_news_app.ui.NewsActivity
@@ -33,6 +34,19 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news){
         viewModel = (activity as NewsActivity).viewModel
 
         setUpNewsAdapter()
+
+        // the action when clicked in an article
+        newsAdapter.setItemClickListener {
+            // creation of the bundle
+            val bundle = Bundle().apply {
+                putSerializable("article",it)
+            }
+            // we select an action to navigate to and attach the bundle as an argument
+            findNavController().navigate(
+                R.id.action_searchNewsFragment_to_articleFragment,
+                bundle
+            )
+        }
 
         var job : Job? = null
         etSearch.addTextChangedListener{ editable ->

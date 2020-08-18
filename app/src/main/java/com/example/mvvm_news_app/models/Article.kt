@@ -4,6 +4,7 @@ package com.example.mvvm_news_app.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 //Tells the app that this will be a table in Room
 @Entity(
@@ -20,4 +21,4 @@ data class Article(
     val urlToImage: String?,
     val publishedAt: String,
     val content: String?
-)
+) : Serializable // to let the object be send through bundles and stuff

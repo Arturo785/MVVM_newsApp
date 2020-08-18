@@ -6,6 +6,7 @@ import android.view.View
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvm_news_app.R
 import com.example.mvvm_news_app.ui.NewsActivity
@@ -26,6 +27,19 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         //allow as to access the viewModel created on the activity
         viewModel = (activity as NewsActivity).viewModel
         setUpNewsAdapter()
+
+        // the action when clicked in an article
+        newsAdapter.setItemClickListener {
+            // creation of the bundle
+            val bundle = Bundle().apply {
+                putSerializable("article",it)
+            }
+            // we select an action to navigate to and attach the bundle as an argument
+            findNavController().navigate(
+                R.id.action_breakingNewsFragment_to_articleFragment,
+                bundle
+            )
+        }
 
         observeBreakingNews()
     }
