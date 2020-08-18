@@ -10,8 +10,8 @@ interface ArticleDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE) // what happens when a conflict happens
     suspend fun upsertArticle(article: Article) : Long
 
-    @Query("SELECT * FROM Articles")
-    suspend fun getAllArticles() : LiveData<List<Article>>
+    @Query("SELECT * FROM Articles") // suspendFun is not supported when returning liveData
+    fun getAllArticles() : LiveData<List<Article>>
 
     @Delete
     suspend fun deleteArticle(article: Article)

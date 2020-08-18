@@ -11,7 +11,7 @@ package com.example.mvvm_news_app.util
 // if the class has nothing to receive use object like the example below
 sealed class Resource<T>{
     data class Success<T>(val data: T) : Resource<T>()
-    data class Error<T>(val message: String, val data: T? = null, val code: Int? = null) : Resource<Nothing>()
-    data class NetworkError(val cause: String? = null): Resource<Nothing>()
-    object Loading : Resource<Nothing>()
+    data class Error<T>(val message: String, val data: T? = null, val code: Int? = null) : Resource<T>()
+    data class NetworkError<T>(val cause: String? = null): Resource<T>()
+    class Loading<T> : Resource<T>()
 }
