@@ -3,13 +3,14 @@ package com.example.mvvm_news_app.ui
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mvvm_news_app.models.Article
 import com.example.mvvm_news_app.models.NewsApiResponse
 import com.example.mvvm_news_app.repository.NewsRepository
 import com.example.mvvm_news_app.util.Resource
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
-class NewsViewModel(val newsRepository : NewsRepository): ViewModel() { // ViewModels by default does not allow
+class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { // ViewModels by default does not allow
     // constructor parameters so we need a factoryInstance to tell the ViewModel how it should be created
 
     val breakingNews : MutableLiveData<Resource<NewsApiResponse>> = MutableLiveData()
@@ -53,5 +54,18 @@ class NewsViewModel(val newsRepository : NewsRepository): ViewModel() { // ViewM
             }
         }
         return Resource.Error(response.message())
+    }
+
+    // *****************************DATABASE FUNCTIONS
+
+    fun saveArticle(article: Article) = viewModelScope.launch {
+        newsRepository.upsert(article)
+    }
+
+    fun getSavedNews() =
+        newsRepository.getSavedNews()
+
+    fun deleteArticle(article: Article) = viewModelScope.launch {
+        newsRepository.deleteArticle(article)
     }
 }
