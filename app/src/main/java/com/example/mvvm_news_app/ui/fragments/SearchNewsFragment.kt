@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AbsListView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -109,6 +110,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search_news){
                 is Resource.Error ->{
                     statusProgressBar(false)
                     response.message?.let { data ->
+                        Toast.makeText(activity, "An error occurred $data", Toast.LENGTH_LONG).show()
                         Log.e(TAG,"An error ocurred $data")
                     }
                 }

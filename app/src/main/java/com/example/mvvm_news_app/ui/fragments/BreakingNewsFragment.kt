@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AbsListView
+import android.widget.Toast
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.mvvm_news_app.R
 import com.example.mvvm_news_app.ui.NewsActivity
 import com.example.mvvm_news_app.ui.NewsViewModel
@@ -34,6 +36,10 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
         super.onViewCreated(view, savedInstanceState)
         //allow as to access the viewModel created on the activity
         viewModel = (activity as NewsActivity).viewModel
+
+        refresh_news.apply {
+            setOnRefreshListener(this@BreakingNewsFragment.refreshListener)
+        }
         setUpNewsAdapter()
 
         // the action when clicked in an article
@@ -87,6 +93,7 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 is Resource.Error ->{
                     statusProgressBar(false)
                     response.message?.let {
+                        Toast.makeText(activity, "An error occurred $it",Toast.LENGTH_LONG).show()
                         Log.e(TAG,"An error ocurred $it")
                     }
                 }
@@ -129,6 +136,13 @@ class BreakingNewsFragment : Fragment(R.layout.fragment_breaking_news) {
                 _isScrolling = true
             }
         }
+    }
+
+    private val refreshListener = SwipeRefreshLayout.OnRefreshListener {
+        viewModel.breakingNewsPage = 1
+        viewModel.breakingNewsResponse = null
+        viewModel.getBreakingNews("mx")
+        refresh_news.isRefreshing = false
     }
 
 

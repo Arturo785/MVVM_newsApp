@@ -23,7 +23,7 @@ class NewsActivity : AppCompatActivity() {
         //Creates the repository, the factoryProvider and sets the ViewModel with
         // our provider and our own viewModel
         val newsRepository = NewsRepository(ArticleDatabase(this))
-        val viewModelProviderFactory = NewsViewModelProviderFactory(newsRepository)
+        val viewModelProviderFactory = NewsViewModelProviderFactory(newsRepository,application)
         viewModel = ViewModelProvider(this,viewModelProviderFactory).get(NewsViewModel::class.java)
 
         //We set the bottomNavigation with our navController

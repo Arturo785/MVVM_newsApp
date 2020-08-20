@@ -1,17 +1,27 @@
 package com.example.mvvm_news_app.ui
 
+import android.app.Application
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities.*
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mvvm_news_app.NewsApplication
 import com.example.mvvm_news_app.models.Article
 import com.example.mvvm_news_app.models.NewsApiResponse
 import com.example.mvvm_news_app.repository.NewsRepository
 import com.example.mvvm_news_app.util.Resource
 import kotlinx.coroutines.launch
 import retrofit2.Response
+import java.io.IOException
 
-class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { // ViewModels by default does not allow
+class NewsViewModel(
+    app: Application
+    ,private val newsRepository : NewsRepository)
+    : AndroidViewModel(app) { // ViewModels by default does not allow
     // constructor parameters so we need a factoryInstance to tell the ViewModel how it should be created
+    // androidViewModel allow us to use the applicationContext
 
     val breakingNews : MutableLiveData<Resource<NewsApiResponse>> = MutableLiveData()
     var breakingNewsPage = 1 // is in here cause the viewModel is not destroyed with rotation
@@ -28,15 +38,11 @@ class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { 
 
     //this coroutine is only alive as long as the viewModel is alive
     fun getBreakingNews(coutryCode: String) = viewModelScope.launch {
-        breakingNews.postValue(Resource.Loading()) // sets the UI the state of loading
-        val response = newsRepository.getBreakingNews(coutryCode,breakingNewsPage)
-        breakingNews.postValue(handleBreakingNewsResponse(response)) // sets the value of the request when it's done
+        safeBreakingNewsCall(coutryCode)
     }
 
     fun searchRequestedNews(queryString : String) = viewModelScope.launch {
-        searchNews.postValue(Resource.Loading())
-        val response = newsRepository.searchNews(queryString, searchNewsPage)
-        searchNews.postValue(handleSearchNewsResponse(response))
+        safeSearchNewsCall(queryString)
     }
 
 
@@ -91,5 +97,66 @@ class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { 
 
     fun deleteArticle(article: Article) = viewModelScope.launch {
         newsRepository.deleteArticle(article)
+    }
+
+    //*************INTERNET CHECKING ***********************
+
+    private fun hasInternetConnection(): Boolean{
+        val connectivityManager = getApplication<NewsApplication>().getSystemService(
+            Context.CONNECTIVITY_SERVICE
+        ) as ConnectivityManager
+        //Obsolete check because our version is always higher
+/*        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            val activeNetwork = connectivityManager.activeNetwork?: return false
+        }*/
+        val activeNetwork = connectivityManager.activeNetwork?: return false // if is active or return false
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+
+        return when{
+            capabilities.hasTransport(TRANSPORT_WIFI) -> true
+            capabilities.hasTransport(TRANSPORT_CELLULAR) -> true
+            capabilities.hasTransport(TRANSPORT_ETHERNET) -> true
+            else -> false
+        }
+    }
+
+    // better to use the way of Mitch tho
+    private suspend fun safeBreakingNewsCall(countryCode: String){
+        breakingNews.postValue(Resource.Loading())
+        try {
+            if (hasInternetConnection()) {
+                val response = newsRepository.getBreakingNews(countryCode, breakingNewsPage)
+                breakingNews.postValue(handleBreakingNewsResponse(response)) // sets the value of the request when it's done
+            }
+            else{
+                breakingNews.postValue(Resource.Error("No internet detected"))
+            }
+        }
+        catch (t: Throwable){
+            when(t){
+                is IOException -> breakingNews.postValue(Resource.Error("Network failure"))
+                else -> breakingNews.postValue(Resource.Error("Another error :${t.cause}"))
+            }
+        }
+    }
+
+    // better to use the way of Mitch tho
+    private suspend fun safeSearchNewsCall(query: String){
+        searchNews.postValue(Resource.Loading())
+        try {
+            if (hasInternetConnection()) {
+                val response = newsRepository.searchNews(query, searchNewsPage)
+                searchNews.postValue(handleSearchNewsResponse(response)) // sets the value of the request when it's done
+            }
+            else{
+                searchNews.postValue(Resource.Error("No internet detected"))
+            }
+        }
+        catch (t: Throwable){
+            when(t){
+                is IOException -> breakingNews.postValue(Resource.Error("Network failure"))
+                else -> breakingNews.postValue(Resource.Error("Another error :${t.cause}"))
+            }
+        }
     }
 }
