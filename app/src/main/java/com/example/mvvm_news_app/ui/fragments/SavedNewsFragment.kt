@@ -62,7 +62,7 @@ class SavedNewsFragment : Fragment(R.layout.fragment_saved_news) {
         })
     }
 
-    fun createSwipeObjectHandler(): ItemTouchHelper.SimpleCallback {
+    private fun createSwipeObjectHandler(): ItemTouchHelper.SimpleCallback {
         //anonymous object to manage the swipe action
         return object : ItemTouchHelper.SimpleCallback(
            ItemTouchHelper.UP or ItemTouchHelper.DOWN, // drag directions

@@ -14,10 +14,12 @@ class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { 
     // constructor parameters so we need a factoryInstance to tell the ViewModel how it should be created
 
     val breakingNews : MutableLiveData<Resource<NewsApiResponse>> = MutableLiveData()
-    val breakingNewsPage = 1 // is in here cause the viewModel is not destroyed with rotation
+    var breakingNewsPage = 1 // is in here cause the viewModel is not destroyed with rotation
+    var breakingNewsResponse : NewsApiResponse? = null
 
     val searchNews : MutableLiveData<Resource<NewsApiResponse>> = MutableLiveData()
-    val searchNewsPage = 1 // is in here cause the viewModel is not destroyed with rotation
+    var searchNewsPage = 1 // is in here cause the viewModel is not destroyed with rotation
+    var searchNewsResponse : NewsApiResponse? = null
 
 
     init {
@@ -40,8 +42,19 @@ class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { 
 
     private fun handleBreakingNewsResponse(response: Response<NewsApiResponse>) : Resource<NewsApiResponse>{
         if (response.isSuccessful){
-            response.body()?.let { successResponse ->
-                return Resource.Success(successResponse)
+            response.body()?.let { resultResponse ->
+                breakingNewsPage++ // we add the number to be ready to the next request
+                if (breakingNewsResponse == null){
+                    breakingNewsResponse = resultResponse // if not news saved means it's a new request at page 1
+                }
+                else{ // we need more results more more pages
+                    val oldArticles = breakingNewsResponse?.articles // takes the reference of the list of the old results
+                    val newArticles = resultResponse.articles // takes the new results
+                    oldArticles?.addAll(newArticles) // adds the new results to the list
+                }
+                return Resource.Success(breakingNewsResponse ?: resultResponse)
+                // if we had old results sends the updated list with more data
+                // otherwise only sends the results from the request
             }
         }
         return Resource.Error(response.message())
@@ -49,8 +62,19 @@ class NewsViewModel(private val newsRepository : NewsRepository): ViewModel() { 
 
     private fun handleSearchNewsResponse(response: Response<NewsApiResponse>) : Resource<NewsApiResponse>{
         if (response.isSuccessful){
-            response.body()?.let { successResponse ->
-                return Resource.Success(successResponse)
+            response.body()?.let { resultResponse ->
+                searchNewsPage++ // we add the number to be ready to the next request
+                if (searchNewsResponse == null){
+                    searchNewsResponse = resultResponse // if not news saved means it's a new request at page 1
+                }
+                else{ // we need more results more more pages
+                    val oldArticles = searchNewsResponse?.articles // takes the reference of the list of the old results
+                    val newArticles = resultResponse.articles // takes the new results
+                    oldArticles?.addAll(newArticles) // adds the new results to the list
+                }
+                return Resource.Success(searchNewsResponse ?: resultResponse)
+                // if we had old results sends the updated list with more data
+                // otherwise only sends the results from the request
             }
         }
         return Resource.Error(response.message())

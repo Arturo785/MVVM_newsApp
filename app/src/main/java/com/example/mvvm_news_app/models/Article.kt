@@ -11,13 +11,12 @@ import java.io.Serializable
     tableName = "Articles"
 )
 data class Article(
-    @PrimaryKey(autoGenerate = true)
-    val PK : Int? = null,
+    val PK : Int? = null,//just ignore it
     val source: Source,
     val author: String?,
     val title: String,
     val description: String?,
-    val url: String,
+    @PrimaryKey val url: String,
     val urlToImage: String?,
     val publishedAt: String,
     val content: String?
